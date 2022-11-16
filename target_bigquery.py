@@ -197,7 +197,8 @@ def persist_lines_job(project_id, dataset_id, lines=None, truncate=False, valida
 
     return state
 
-def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=True):
+
+def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=True, location=None):
     state = None
     schemas = {}
     key_properties = {}
@@ -205,7 +206,7 @@ def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=Tr
     rows = {}
     errors = {}
 
-    bigquery_client = bigquery.Client(project=project_id)
+    bigquery_client = bigquery.Client(project=project_id, location=location)
 
     dataset_ref = bigquery_client.dataset(dataset_id)
     dataset = Dataset(dataset_ref)
@@ -305,9 +306,11 @@ def main():
     input = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
 
     if config.get('stream_data', True):
-        state = persist_lines_stream(config['project_id'], config['dataset_id'], input, validate_records=validate_records)
+        state = persist_lines_stream(config['project_id'], config['dataset_id'], input,
+                                     validate_records=validate_records, location=config.get('location'))
     else:
-        state = persist_lines_job(config['project_id'], config['dataset_id'], input, truncate=truncate, validate_records=validate_records)
+        state = persist_lines_job(config['project_id'], config['dataset_id'], input, truncate=truncate,
+                                  validate_records=validate_records, location=config.get('location'))
 
     emit_state(state)
     logger.debug("Exiting normally")
