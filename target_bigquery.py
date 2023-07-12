@@ -9,18 +9,19 @@ import collections
 import threading
 import http.client
 import urllib
-import pkg_resources
 
-from jsonschema import validate
+import pkg_resources
 import singer
+
+from jsonschema.validators import validate
 
 from oauth2client import tools
 from tempfile import TemporaryFile
 
 from google.cloud import bigquery
 from google.cloud.bigquery.job import SourceFormat
-from google.cloud.bigquery import Dataset, WriteDisposition
-from google.cloud.bigquery import SchemaField
+from google.cloud.bigquery import Dataset, WriteDisposition, SchemaField
+
 from google.cloud.bigquery import LoadJobConfig
 from google.api_core import exceptions
 
@@ -105,7 +106,7 @@ def build_schema(schema):
             continue
 
         schema_name, schema_type, schema_mode, schema_description, schema_fields = define_schema(schema['properties'][key], key)
-        SCHEMA.append(SchemaField(schema_name, schema_type, schema_mode, schema_description, schema_fields))
+        SCHEMA.append(SchemaField(schema_name, schema_type, mode=schema_mode, description=schema_description, fields=schema_fields))
 
     return SCHEMA
 
