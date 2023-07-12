@@ -1,29 +1,25 @@
 #!/usr/bin/env python3
 
 import argparse
+import collections
+import http.client
 import io
-import sys
 import json
 import logging
-import collections
+import sys
 import threading
-import http.client
 import urllib
+from tempfile import TemporaryFile
 
 import pkg_resources
 import singer
-
-from jsonschema.validators import validate
-
-from oauth2client import tools
-from tempfile import TemporaryFile
-
-from google.cloud import bigquery
-from google.cloud.bigquery.job import SourceFormat
-from google.cloud.bigquery import Dataset, WriteDisposition, SchemaField
-
-from google.cloud.bigquery import LoadJobConfig
 from google.api_core import exceptions
+from google.cloud import bigquery
+from google.cloud.bigquery import Dataset, WriteDisposition, SchemaField
+from google.cloud.bigquery import LoadJobConfig
+from google.cloud.bigquery.job import SourceFormat
+from jsonschema.validators import validate
+from oauth2client import tools
 
 try:
     parser = argparse.ArgumentParser(parents=[tools.argparser])
@@ -232,7 +228,7 @@ def persist_lines_stream(project_id, dataset_id, lines=None, validate_records=Tr
             if validate_records:
                 validate(msg.record, schema)
 
-            errors[msg.stream] = bigquery_client.insert_rows_json(tables[msg.stream], [msg.record])
+            errors[msg.stream] = bigquery_client.insert_rows_json(tables[msg.stream], [msg.record], ignore_unknown_values=True)
             rows[msg.stream] += 1
 
             state = None
